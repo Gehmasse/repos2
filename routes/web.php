@@ -3,5 +3,8 @@
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
-    return view('welcome');
+    return view('main', [
+        'offline' => \App\OfflineRepo::all(),
+        'online' => \App\OnlineRepo::all(),
+    ]);
 });

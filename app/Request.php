@@ -41,7 +41,13 @@ class Request
 
     function repos(): Collection
     {
-        return Collection::make(json_decode($this->request('/user/repos?type=all&per_page=100'), associative: true))
+        $result = json_decode($this->request('/user/repos?type=all&per_page=100'), associative: true);
+
+        if(is_array($result) && array_key_exists('message', $result) && $result['message'] === 'Requires authentication') {
+            die('authentication failed' . PHP_EOL);
+        }
+
+        return Collection::make($result)
             ->map(fn(array $repo) => Repo::fromRequest($repo));
     }
 }

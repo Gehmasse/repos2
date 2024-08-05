@@ -85,3 +85,7 @@ Artisan::command('repos:move', function () {
 
     $repo->info()->setPath($path)->persist($repo->id);
 })->describe('move a repo to a new path');
+
+Artisan::command('x', function () {
+    \App\Repo::all()->each(fn(\App\Repo $repo) => dump($repo->string()));
+});

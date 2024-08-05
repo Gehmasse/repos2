@@ -17,7 +17,8 @@ class OfflineRepo extends Repo {
     public static function all(): Collection {
         return collect(scandir(self::base()))
             ->filter(fn(string $elem) => !str_starts_with($elem, '.') && is_dir(self::base() . '/' . $elem))
-            ->map(OfflineRepo::new(...));
+            ->map(OfflineRepo::new(...))
+            ->sortBy(fn(self $repo) => $repo->string());
     }
     
     public function dir(): string {
@@ -28,7 +29,31 @@ class OfflineRepo extends Repo {
         return self::base() . '/' . $this->dir;
     }
 
-    protected function string(): string {
+    public function string(): string {
         return $this->dir;
+    }
+
+    public function type(): string {
+        $git = Git::new($this->path());
+
+        if(!$git->isRepo()) {
+            return 'No Repo';
+        }
+
+        if($git->hasOrigin()) {
+            $git->fetch();
+
+            if($git->needsPull()) {
+                return 'Synced - Pull';
+            }
+
+            if($git->needsPush()) {
+                return 'Synced - Push';
+            }
+
+            return 'Synced';
+        }
+
+        return 'Offline';
     }
 }

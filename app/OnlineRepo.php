@@ -4,31 +4,28 @@ namespace App;
 use Illuminate\Support\Collection;
 
 class OnlineRepo extends Repo {
-    private function __construct(private string $dir) {}
+    private function __construct(private \App\Storage\Repo $repo) {}
 
-    public static function new(string $dir): self {
-        return new self($dir);
-    }
-
-    private static function base(): string {
-        return env('REPO_LOCATION');
+    public static function new(\App\Storage\Repo $repo): self {
+        return new self($repo);
     }
 
     public static function all(): Collection {
-        return collect(scandir(self::base()))
-            ->filter(fn(string $elem) => !str_starts_with($elem, '.') && is_dir(self::base() . '/' . $elem))
-            ->map(OfflineRepo::new(...));
+        return (new \App\Request)
+            ->repos()
+            ->map(self::neW(...))
+            ->sortBy(fn(self $repo) => $repo->string());
     }
     
-    public function dir(): string {
-        return $this->dir;
+    public function string(): string {
+        return $this->repo->name;
     }
 
-    public function path(): string {
-        return self::base() . '/' . $this->dir;
+    public function type(): string {
+        return 'Online';
     }
 
-    protected function string(): string {
-        return $this->dir;
+    public function cloneLink(): string {
+        return '<a href="/clone"></a>';
     }
 }
